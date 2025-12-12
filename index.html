@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <title>番茄时钟 - 修复版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+        }
+
+        .timer-display {
+            margin: 30px 0;
+        }
+
+        .time {
+            font-size: 4rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .timer-label {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .settings {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .setting-item label {
+            font-weight: bold;
+        }
+
+        /* HIIT切换开关样式 */
+        .hiit-toggle-container {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hiit-toggle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .hiit-label {
+            font-weight: bold;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .toggle-btn {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .toggle-btn:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            border-color: #4CAF50;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-btn.active .toggle-slider {
+            left: 32px;
+            background: #fff;
+        }
+
+        .hiit-mode-indicator {
+            display: inline-block;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .setting-item input, .setting-item select {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 100px;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status.working { background: rgba(76, 175, 80, 0.3); }
+        .status.breaking { background: rgba(33, 150, 243, 0.3); }
+        
+        /* 移动设备响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .time {
+                font-size: 3rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+            
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .setting-item label {
+                width: 100%;
+                text-align: left;
+            }
+            
+            .setting-item input, .setting-item select {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .timer-label {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* 防止手机缩放 */
+        @media (max-width: 480px) {
+            html {
+                -webkit-text-size-adjust: 100%;
+            }
+            
+            .time {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍅 番茄时钟</h1>
+            <p class="subtitle">聚焦就是生产力！</p>
+        </header>
+        
+        <main class="timer-section">
+        <div class="timer-display">
+            <div class="time">
+                <span id="minutes">25</span>:<span id="seconds">00</span>
+            </div>
+            <div class="timer-label">
+                <span id="mode">工作</span> 时间 <span style="font-size: 1.5em; margin-left: 5px;">😊</span>
+            </div>
+        </div>
+            
+            <div class="controls">
+                <button id="start-btn" class="btn btn-primary">开始</button>
+                <button id="pause-btn" class="btn btn-secondary" disabled>暂停</button>
+                <button id="reset-btn" class="btn btn-secondary">重置</button>
+            </div>
+            
+            <div class="status" id="status">
+                状态: 准备就绪
+            </div>
+        </main>
+        
+        <div class="settings">
+            <div class="setting-item hiit-toggle-container">
+                <label>模式切换:</label>
+                <div class="hiit-toggle">
+                    <span class="hiit-label">🍅 番茄工作</span>
+                    <button class="toggle-btn" id="hiit-toggle-btn">
+                        <span class="toggle-slider"></span>
+                    </button>
+                    <span class="hiit-label">💪 HIIT训练</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label for="time-unit">时间单位:</label>
+                <select id="time-unit">
+                    <option value="minutes">分钟</option>
+                    <option value="seconds">秒</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="work-time" id="work-time-label">工作时间 (分钟):</label>
+                <input type="number" id="work-time" value="25" min="1" max="60">
+            </div>
+            <div class="setting-item">
+                <label for="break-time" id="break-time-label">休息时间 (分钟):</label>
+                <input type="number" id="break-time" value="5" min="1" max="30">
+            </div>
+            <div class="setting-item" id="rounds-setting" style="display: none;">
+                <label for="rounds">训练轮次:</label>
+                <input type="number" id="rounds" value="1" min="1" max="20">
+            </div>
+        </div>
+        
+        <div class="rounds-info" id="rounds-info" style="display: none; margin-top: 15px; padding: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 5px;">
+            <div>当前轮次: <span id="current-round">1</span>/<span id="total-rounds">1</span></div>
+            <div>已完成轮次: <span id="completed-rounds">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        class PomodoroTimer {
+            constructor() {
+                this.workTime = 25 * 60; // 25分钟转换为秒
+                this.breakTime = 5 * 60; // 5分钟转换为秒
+                this.currentTime = this.workTime;
+                this.isRunning = false;
+                this.isWorkMode = true;
+                this.timerInterval = null;
+                this.timeUnit = 'minutes';
+                this.totalRounds = 1;
+                this.currentRound = 1;
+                this.completedRounds = 0;
+                this._audioContext = null;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.updateDisplay();
+            }
+            
+            initializeElements() {
+                this.minutesEl = document.getElementById('minutes');
+                this.secondsEl = document.getElementById('seconds');
+                this.modeEl = document.getElementById('mode');
+                this.startBtn = document.getElementById('start-btn');
+                this.pauseBtn = document.getElementById('pause-btn');
+                this.resetBtn = document.getElementById('reset-btn');
+                this.workTimeInput = document.getElementById('work-time');
+                this.breakTimeInput = document.getElementById('break-time');
+                this.timeUnitSelect = document.getElementById('time-unit');
+                this.workTimeLabel = document.getElementById('work-time-label');
+                this.breakTimeLabel = document.getElementById('break-time-label');
+                this.statusEl = document.getElementById('status');
+                this.roundsInput = document.getElementById('rounds');
+                this.roundsSetting = document.getElementById('rounds-setting');
+                this.roundsInfo = document.getElementById('rounds-info');
+                this.currentRoundEl = document.getElementById('current-round');
+                this.totalRoundsEl = document.getElementById('total-rounds');
+                this.completedRoundsEl = document.getElementById('completed-rounds');
+                this.hiitToggleBtn = document.getElementById('hiit-toggle-btn');
+                
+                this.updateTimeLabels();
+                this.updateRoundsDisplay();
+                this.updateToggleButton();
+            }
+            
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+                
+                this.hiitToggleBtn.addEventListener('click', () => this.toggleHiitMode());
+                
+                this.timeUnitSelect.addEventListener('change', (e) => {
+                    this.timeUnit = e.target.value;
+                    this.updateTimeLabels();
+                    this.updateTimeInputs();
+                    this.updateRoundsDisplay();
+                    this.updateToggleButton();
+                    this.reset();
+                });
+                
+                this.workTimeInput.addEventListener('change', (e) => {
+                    const value = parseInt(e.target.value);
+                    if (isNaN(value) || value <= 0) return;
+                    
+                    this.workTime = this.timeUnit === 'minutes' ? value * 60 : value;
+                    if (!this.isRunning && this.isWorkMode) {
+                        this.currentTime = this.workTime;
+                        this.updateDisplay();
+                    }
+                });
+                
+                this.breakTimeInput.addEventListener('change', (e) => {
+                    const value = parseInt(e.target.value);
+                    if (isNaN(value) || value <= 0) return;
+                    
+                    this.breakTime = this.timeUnit === 'minutes' ? value * 60 : value;
+                    if (!this.isRunning && !this.isWorkMode) {
+                        this.currentTime = this.breakTime;
+                        this.updateDisplay();
+                    }
+                });
+                
+                this.roundsInput.addEventListener('change', (e) => {
+                    const value = parseInt(e.target.value);
+                    if (isNaN(value) || value <= 0) return;
+                    
+                    this.totalRounds = value;
+                    this.updateRoundsDisplay();
+                });
+                
+                // 增强的音频激活策略：所有交互都尝试激活音频
+                const activateAudio = () => {
+                    this.activateAudioContext();
+                };
+                
+                // 添加多种事件来激活音频
+                document.addEventListener('click', activateAudio, { once: true });
+                document.addEventListener('touchstart', activateAudio, { once: true });
+                document.addEventListener('keydown', activateAudio, { once: true });
+                
+                // 页面加载时也尝试激活
+                window.addEventListener('load', () => {
+                    setTimeout(activateAudio, 1000); // 延迟1秒激活
+                });
+            }
+            
+            updateTimeLabels() {
+                const unit = this.timeUnit === 'minutes' ? '分钟' : '秒';
+                this.workTimeLabel.textContent = `工作时间 (${unit}):`;
+                this.breakTimeLabel.textContent = `休息时间 (${unit}):`;
+            }
+            
+            updateTimeInputs() {
+                if (this.timeUnit === 'seconds') {
+                    this.workTimeInput.value = Math.round(this.workTime);
+                    this.workTimeInput.min = 1;
+                    this.workTimeInput.max = 3600;
+                    
+                    this.breakTimeInput.value = Math.round(this.breakTime);
+                    this.breakTimeInput.min = 1;
+                    this.breakTimeInput.max = 1800;
+                } else {
+                    this.workTimeInput.value = Math.round(this.workTime / 60);
+                    this.workTimeInput.min = 1;
+                    this.workTimeInput.max = 60;
+                    
+                    this.breakTimeInput.value = Math.round(this.breakTime / 60);
+                    this.breakTimeInput.min = 1;
+                    this.breakTimeInput.max = 30;
+                }
+            }
+            
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.startBtn.disabled = true;
+                this.pauseBtn.disabled = false;
+                this.statusEl.textContent = this.timeUnit === 'seconds' ? 
+                    `状态: HIIT训练中 (轮次 ${this.currentRound}/${this.totalRounds})` : 
+                    '状态: 计时中...';
+                this.statusEl.className = 'status working';
+                
+                // 播放开始提示音和语音
+                this.playStartSound();
+                if (this.timeUnit === 'seconds') {
+                    this.speak('锻炼开始，快乐地启动了！');
+                } else {
+                    this.speak('学习开始，快乐地启动了！');
+                }
+                
+                this.timerInterval = setInterval(() => {
+                    this.tick();
+                }, 1000);
+            }
+            
+            pause() {
+                if (!this.isRunning) return;
+                
+                this.isRunning = false;
+                this.startBtn.disabled = false;
+                this.pauseBtn.disabled = true;
+                this.statusEl.textContent = '状态: 已暂停';
+                
+                clearInterval(this.timerInterval);
+            }
+            
+            reset() {
+                this.pause();
+                this.isWorkMode = true;
+                this.currentTime = this.workTime;
+                this.currentRound = 1;
+                this.completedRounds = 0;
+                this.updateDisplay();
+                this.updateRoundsDisplay();
+                this.statusEl.textContent = '状态: 准备就绪';
+                this.statusEl.className = 'status';
+            }
+            
+            updateRoundsDisplay() {
+                // 显示/隐藏轮次相关元素
+                if (this.timeUnit === 'seconds') {
+                    this.roundsSetting.style.display = 'flex';
+                    this.roundsInfo.style.display = 'block';
+                } else {
+                    this.roundsSetting.style.display = 'none';
+                    this.roundsInfo.style.display = 'none';
+                }
+                
+                this.totalRoundsEl.textContent = this.totalRounds;
+                this.currentRoundEl.textContent = this.currentRound;
+                this.completedRoundsEl.textContent = this.completedRounds;
+            }
+            
+            updateToggleButton() {
+                if (this.timeUnit === 'seconds') {
+                    this.hiitToggleBtn.classList.add('active');
+                } else {
+                    this.hiitToggleBtn.classList.remove('active');
+                }
+            }
+            
+            toggleHiitMode() {
+                if (this.timeUnit === 'seconds') {
+                    // 切换到分钟模式
+                    this.timeUnit = 'minutes';
+                    this.timeUnitSelect.value = 'minutes';
+                    this.speak('已切换到番茄工作模式');
+                } else {
+                    // 切换到HIIT模式
+                    this.timeUnit = 'seconds';
+                    this.timeUnitSelect.value = 'seconds';
+                    this.speak('已切换到HIIT训练模式');
+                }
+                
+                this.updateTimeLabels();
+                this.updateTimeInputs();
+                this.updateRoundsDisplay();
+                this.updateToggleButton();
+                this.reset();
+            }
+            
+            activateAudioContext() {
+                // 增强的音频上下文激活，专门针对移动端优化
+                if (!this._audioContext && (window.AudioContext || window.webkitAudioContext)) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    this._audioContext = new AudioContextClass();
+                    
+                    // 移动端需要更积极的音频激活策略
+                    try {
+                        // 创建更明显的音频激活（用户可感知的轻微提示音）
+                        const oscillator = this._audioContext.createOscillator();
+                        const gainNode = this._audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this._audioContext.destination);
+                        
+                        // 使用用户可感知但不太突兀的频率
+                        oscillator.frequency.value = 220; // A3音
+                        oscillator.type = 'sine';
+                        
+                        const now = this._audioContext.currentTime;
+                        gainNode.gain.setValueAtTime(0.001, now); // 极低音量
+                        gainNode.gain.linearRampToValueAtTime(0.01, now + 0.05); // 轻微提升
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        
+                        oscillator.start(now);
+                        oscillator.stop(now + 0.1);
+                        
+                        // 强制恢复音频上下文
+                        if (this._audioContext.state === 'suspended') {
+                            this._audioContext.resume().then(() => {
+                                console.log('音频上下文已激活');
+                            }).catch(() => {
+                                console.log('音频上下文恢复失败');
+                            });
+                        }
+                        
+                        // 移动端额外处理：振动反馈（如果支持）
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(10); // 轻微振动提示
+                        }
+                        
+                    } catch (error) {
+                        console.log('音频激活失败，将使用备用提示方式');
+                    }
+                }
+            }
+            
+            playSound() {
+                // 增强的闹钟声音，支持移动端和桌面端
+                try {
+                    // 优先检查音频上下文状态
+                    if (!this._audioContext && (window.AudioContext || window.webkitAudioContext)) {
+                        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                        this._audioContext = new AudioContextClass();
+                    }
+                    
+                    if (!this._audioContext) {
+                        this.playFallbackSound();
+                        return;
+                    }
+                    
+                    const audioContext = this._audioContext;
+                    
+                    // 移动端优化：确保音频上下文已激活
+                    const playAudio = () => {
+                        if (audioContext.state === 'suspended') {
+                            audioContext.resume().then(() => {
+                                this.createEnhancedAlarm(audioContext);
+                            }).catch(() => {
+                                this.playFallbackSound();
+                            });
+                        } else {
+                            this.createEnhancedAlarm(audioContext);
+                        }
+                    };
+                    
+                    // 移动端特殊处理：如果音频上下文未就绪，先激活
+                    if (audioContext.state === 'suspended') {
+                        this.activateAudioContext();
+                        setTimeout(playAudio, 100); // 给音频上下文激活留出时间
+                    } else {
+                        playAudio();
+                    }
+                    
+                } catch (error) {
+                    console.log('声音播放失败，使用备用提示方式');
+                    this.playFallbackSound();
+                }
+            }
+            
+            createEnhancedAlarm(audioContext) {
+                try {
+                    // 增强的闹钟声音：支持移动端和桌面端的兼容版本
+                    const oscillator1 = audioContext.createOscillator();
+                    const oscillator2 = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator1.connect(gainNode);
+                    oscillator2.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // 移动端优化：使用更清晰、更响亮的频率
+                    oscillator1.frequency.value = 440; // A4音，更清晰
+                    oscillator1.type = 'square';
+                    
+                    oscillator2.frequency.value = 880; // A5音，高音
+                    oscillator2.type = 'sine';
+                    
+                    // 增强的增益包络：更明显的提醒效果
+                    const now = audioContext.currentTime;
+                    
+                    // 第一次敲击（更响亮）
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    
+                    // 第二次敲击
+                    gainNode.gain.linearRampToValueAtTime(0.25, now + 0.5);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                    
+                    // 第三次敲击
+                    gainNode.gain.linearRampToValueAtTime(0.2, now + 0.9);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                    
+                    // 第四次敲击（移动端增强）
+                    gainNode.gain.linearRampToValueAtTime(0.15, now + 1.3);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
+                    
+                    oscillator1.start(now);
+                    oscillator2.start(now);
+                    oscillator1.stop(now + 1.6);
+                    oscillator2.stop(now + 1.6);
+                    
+                    // 移动端振动支持
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([100, 50, 100, 50, 100]); // 振动模式
+                    }
+                    
+                    const cleanup = () => {
+                        oscillator1.disconnect();
+                        oscillator2.disconnect();
+                        gainNode.disconnect();
+                    };
+                    
+                    oscillator1.onended = cleanup;
+                    
+                } catch (error) {
+                    console.log('增强闹钟声音创建失败，使用备用方案');
+                    this.playFallbackSound();
+                }
+            }
+            
+            playFallbackSound() {
+                // 备用声音方案：使用HTML5 Audio API
+                try {
+                    // 创建简单的哔哔声
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'square';
+                    
+                    const now = audioContext.currentTime;
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.5, now + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                    
+                    // 同时使用标题闪烁和振动
+                    this.flashTitle();
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(200);
+                    }
+                    
+                } catch (error) {
+                    // 最后的手段：使用系统提示音
+                    this.useSystemBeep();
+                }
+            }
+            
+            useSystemBeep() {
+                // 使用系统默认的提示音（最兼容的方案）
+                try {
+                    // 创建简单的系统提示音
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 1000; // 高频提示音
+                    oscillator.type = 'sine';
+                    
+                    const now = audioContext.currentTime;
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.5);
+                    
+                    // 确保有视觉反馈
+                    this.flashTitle();
+                    
+                } catch (error) {
+                    console.log('所有音频方案都失败了，仅使用视觉提示');
+                    this.flashTitle();
+                }
+            }
+            
+            playStartSound() {
+                // 开始计时的轻提示音
+                try {
+                    if (!this._audioContext && (window.AudioContext || window.webkitAudioContext)) {
+                        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                        this._audioContext = new AudioContextClass();
+                    }
+                    
+                    if (!this._audioContext) return;
+                    
+                    const audioContext = this._audioContext;
+                    
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume().catch(() => {
+                            return;
+                        });
+                    }
+                    
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 880; // 高音提示
+                    oscillator.type = 'sine';
+                    
+                    const now = audioContext.currentTime;
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.1, now + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                    
+                    oscillator.onended = () => {
+                        oscillator.disconnect();
+                        gainNode.disconnect();
+                    };
+                    
+                } catch (error) {
+                    console.log('开始提示音播放失败');
+                }
+            }
+            
+            playCompleteSound() {
+                // 训练完成提示音
+                try {
+                    if (!this._audioContext && (window.AudioContext || window.webkitAudioContext)) {
+                        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                        this._audioContext = new AudioContextClass();
+                    }
+                    
+                    if (!this._audioContext) return;
+                    
+                    const audioContext = this._audioContext;
+                    
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume().catch(() => {
+                            return;
+                        });
+                    }
+                    
+                    const oscillator1 = audioContext.createOscillator();
+                    const oscillator2 = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator1.connect(gainNode);
+                    oscillator2.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // 完成音效：欢快的音调
+                    oscillator1.frequency.value = 523.25; // C5
+                    oscillator1.type = 'sine';
+                    oscillator2.frequency.value = 659.25; // E5
+                    oscillator2.type = 'sine';
+                    
+                    const now = audioContext.currentTime;
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.2, now + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    
+                    oscillator1.start(now);
+                    oscillator2.start(now);
+                    oscillator1.stop(now + 0.5);
+                    oscillator2.stop(now + 0.5);
+                    
+                    oscillator1.onended = () => {
+                        oscillator1.disconnect();
+                        oscillator2.disconnect();
+                        gainNode.disconnect();
+                    };
+                    
+                } catch (error) {
+                    console.log('完成提示音播放失败');
+                }
+            }
+            
+            flashTitle() {
+                let flashCount = 0;
+                const originalTitle = document.title;
+                const flashInterval = setInterval(() => {
+                    document.title = flashCount % 2 === 0 ? '⏰ 时间到！' : originalTitle;
+                    flashCount++;
+                    if (flashCount > 6) {
+                        clearInterval(flashInterval);
+                        document.title = originalTitle;
+                    }
+                }, 500);
+            }
+            
+            speak(text) {
+                // 使用浏览器语音合成API进行语音提示
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 0.9;
+                    utterance.pitch = 0.8;
+                    utterance.volume = 0.7;
+                    
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+            
+            showNotification(message) {
+                // 检查浏览器是否支持通知API
+                if (!('Notification' in window)) {
+                    alert(message);
+                    return;
+                }
+                
+                // 检查通知权限
+                if (Notification.permission === 'granted') {
+                    this.createNotification(message);
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            this.createNotification(message);
+                        } else {
+                            alert(message);
+                        }
+                    });
+                } else {
+                    alert(message);
+                }
+            }
+            
+            createNotification(message) {
+                const notification = new Notification('番茄时钟', {
+                    body: message,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23e74c3c"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="40">🍅</text></svg>',
+                    tag: 'pomodoro-timer'
+                });
+                
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+                
+                setTimeout(() => notification.close(), 5000);
+            }
+            
+            tick() {
+                if (!this.isRunning) return;
+                
+                // HIIT模式下，结束前5秒倒计时语音
+                if (this.timeUnit === 'seconds' && this.isWorkMode && this.currentTime <= 5 && this.currentTime > 0) {
+                    this.speak(this.currentTime.toString());
+                }
+                
+                if (this.currentTime > 0) {
+                    this.currentTime--;
+                    this.updateDisplay();
+                } else {
+                    this.switchMode();
+                }
+            }
+            
+            switchMode() {
+                clearInterval(this.timerInterval);
+                
+                // 播放切换模式提示音
+                this.playSound();
+                
+                if (this.isWorkMode) {
+                    // 工作时间结束
+                    this.isWorkMode = false;
+                    this.currentTime = this.breakTime;
+                    this.statusEl.textContent = this.timeUnit === 'seconds' ? 
+                        `状态: HIIT休息中 (轮次 ${this.currentRound}/${this.totalRounds})` : 
+                        '状态: 休息时间';
+                    this.statusEl.className = 'status breaking';
+                    
+                    // 语音提示
+                    if (this.timeUnit === 'seconds') {
+                        this.speak('锻炼结束，开始休息');
+                        this.showNotification('HIIT训练结束！开始休息吧！');
+                    } else {
+                        this.speak('工作时间结束，开始休息');
+                        this.showNotification('工作时间结束！开始休息吧！');
+                    }
+                } else {
+                    // 休息时间结束，检查是否完成一轮
+                    this.completedRounds++;
+                    
+                    if (this.completedRounds >= this.totalRounds) {
+                        // 训练完成
+                        this.isRunning = false;
+                        this.startBtn.disabled = false;
+                        this.pauseBtn.disabled = true;
+                        this.statusEl.textContent = this.timeUnit === 'seconds' ? 
+                            '状态: HIIT训练完成！' : '状态: 训练完成！';
+                        this.statusEl.className = 'status';
+                        
+                        // 播放完成提示音
+                        this.playCompleteSound();
+                        this.speak('训练完成，恭喜！');
+                        this.showNotification('训练完成！恭喜你完成所有轮次！');
+                        return;
+                    } else {
+                        // 继续下一轮
+                        this.currentRound++;
+                        this.isWorkMode = true;
+                        this.currentTime = this.workTime;
+                        this.statusEl.textContent = this.timeUnit === 'seconds' ? 
+                            `状态: HIIT训练中 (轮次 ${this.currentRound}/${this.totalRounds})` : 
+                            '状态: 工作时间';
+                        this.statusEl.className = 'status working';
+                        
+                        // 语音提示
+                        this.speak(`休息时间结束，开始第${this.currentRound}轮训练`);
+                        this.showNotification(`休息时间结束！开始第${this.currentRound}轮训练！`);
+                    }
+                }
+                
+                this.updateDisplay();
+                this.updateRoundsDisplay();
+                
+                if (this.isRunning) {
+                    this.timerInterval = setInterval(() => {
+                        this.tick();
+                    }, 1000);
+                }
+            }
+            
+            updateDisplay() {
+                if (this.timeUnit === 'seconds') {
+                    const totalSeconds = this.currentTime;
+                    this.minutesEl.textContent = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+                    this.secondsEl.textContent = (totalSeconds % 60).toString().padStart(2, '0');
+                } else {
+                    const minutes = Math.floor(this.currentTime / 60);
+                    const seconds = this.currentTime % 60;
+                    this.minutesEl.textContent = minutes.toString().padStart(2, '0');
+                    this.secondsEl.textContent = seconds.toString().padStart(2, '0');
+                }
+                
+                this.modeEl.textContent = this.isWorkMode ? '工作' : '休息';
+                this.startBtn.textContent = this.isRunning ? '继续' : '开始';
+                
+                // 更新页面标题
+                const minutes = Math.floor(this.currentTime / 60);
+                const seconds = this.currentTime % 60;
+                const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const modeStr = this.isWorkMode ? '工作' : '休息';
+                document.title = `${timeStr} - ${modeStr}时间 | 番茄时钟`;
+            }
+        }
+
+        // 页面加载完成后初始化番茄时钟
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                new PomodoroTimer();
+            } catch (error) {
+                console.error('初始化番茄时钟失败:', error);
+                alert('番茄时钟初始化失败，请刷新页面重试。');
+            }
+        });
+    </script>
+</body>
+</html>
